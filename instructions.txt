@@ -1,0 +1,19 @@
+# 1. Installe les prérequis (une seule fois)
+#    - Python 3.11
+#    - Node.js
+#    - Git
+
+# 2. Clone ton projet depuis GitHub
+git clone https://github.com/TON_COMPTE/portail-dtctq.git C:\projets\portail-dtctq
+
+# 3. Installe les dépendances Python
+cd C:\projets\portail-dtctq\backend
+python -m pip install -r requirements.txt
+
+# 4. Installe les dépendances Node
+cd ..\frontend
+npm install
+
+# 5. Lance !
+cd ..
+start.bat
