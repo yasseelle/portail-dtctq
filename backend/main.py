@@ -8,6 +8,7 @@ from routers import hr, profile, courrier
 from routers import admin
 from routers import notifications
 from routers import vehicules
+from routers import pdf_tools
 
 import models, auth
 from database import engine, get_db, Base
@@ -33,6 +34,7 @@ app.include_router(courrier.router)
 app.include_router(admin.router)
 app.include_router(notifications.router)
 app.include_router(vehicules.router)
+app.include_router(pdf_tools.router)
 
 
 # ── Pydantic schemas ──────────────────────────────────────────

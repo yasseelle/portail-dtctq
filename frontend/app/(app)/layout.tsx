@@ -24,6 +24,7 @@ const NAV_ITEMS = [
   { section:"rh",   label:"Fin Manquant",        icon:"⚠️", href:"/hr"        },
   { section:"rh",   label:"Repos Compensateur",  icon:"⏱️", href:"/hr"        },
   { section:"main", label:"Parc Véhicules", icon:"🚗", href:"/vehicules" },
+  { section:"main", label:"Outils PDF", icon:"📄", href:"/pdf-tools" },
   { section:"sys",  label:"Mon Profil",          icon:"👤", href:"/profile"   },
   { section:"sys",  label:"Panel Admin",         icon:"👑", href:"/admin", adminOnly:true },
 ];
