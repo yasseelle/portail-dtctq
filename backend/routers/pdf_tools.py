@@ -447,3 +447,4 @@ async def pdf_info(
         }
     except Exception as e:
         raise HTTPException(500, f"Erreur lecture : {str(e)}")
+ 

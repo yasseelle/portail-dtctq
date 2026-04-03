@@ -621,3 +621,4 @@ const inpSt: React.CSSProperties = {
   borderRadius:9, padding:"9px 12px", color:"var(--text)", fontSize:13,
   outline:"none", fontFamily:"var(--font-body)",
 };
+ 
