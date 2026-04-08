@@ -110,3 +110,18 @@ class VehiculeDocument(Base):
     nom_fichier  = Column(String, nullable=False)   # nom original
     chemin       = Column(String, nullable=False)   # chemin complet sur le disque
     uploaded_at  = Column(DateTime, server_default=func.now())
+
+
+class Devis(Base):
+    __tablename__ = "devis"
+ 
+    id           = Column(Integer, primary_key=True, index=True)
+    reference    = Column(String, default="")       # N° référence ex: 3/DI/CTR/DTC/TQ/SE/666/2024
+    destinataire = Column(String, default="")       # ex: DCM/GC
+    objet        = Column(Text,   default="")       # objet du devis
+    montant_ttc  = Column(String, default="")       # montant total TTC ex: "1 590 915,17"
+    pdf_path     = Column(String, default="")       # chemin complet du PDF
+    date_devis   = Column(String, default="")       # date extraite du document DD/MM/YYYY
+    mois         = Column(String, default="")       # feuille Excel ex: "Janvier"
+    created_at   = Column(DateTime, server_default=func.now())
+    updated_at   = Column(DateTime, server_default=func.now(), onupdate=func.now())

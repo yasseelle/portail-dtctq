@@ -17,6 +17,7 @@ const NAV_ITEMS = [
   { section:"main", label:"Courrier Arrivée",    icon:"📬", href:"/courrier"  },
   { section:"main", label:"Bordereau d'Envoi",   icon:"📤", href:"/courrier"  },
   { section:"main", label:"Départ / Réception",  icon:"🔄", href:"/courrier"  },
+  { section:"main", label:"Registre Devis", icon:"📋", href:"/devis" },
   { section:"rh",   label:"Permission (PE)",     icon:"🟢", href:"/hr"        },
   { section:"rh",   label:"Autorisation Sortie", icon:"🚪", href:"/hr"        },
   { section:"rh",   label:"Reprise de Service",  icon:"🔁", href:"/hr"        },
@@ -24,7 +25,7 @@ const NAV_ITEMS = [
   { section:"rh",   label:"Fin Manquant",        icon:"⚠️", href:"/hr"        },
   { section:"rh",   label:"Repos Compensateur",  icon:"⏱️", href:"/hr"        },
   { section:"main", label:"Parc Véhicules", icon:"🚗", href:"/vehicules" },
-  { section:"main", label:"Outils PDF", icon:"📄", href:"/pdf-tools" },
+  { section:"sys", label:"Outils PDF", icon:"📄", href:"/pdf-tools" },
   { section:"sys",  label:"Mon Profil",          icon:"👤", href:"/profile"   },
   { section:"sys",  label:"Panel Admin",         icon:"👑", href:"/admin", adminOnly:true },
 ];

@@ -14,6 +14,8 @@ import models, auth
 from database import engine, get_db, Base
 from sqlalchemy import func
 from datetime import datetime, timedelta
+from routers import devis
+
 
 # ── Create all DB tables on startup ──────────────────────────
 Base.metadata.create_all(bind=engine)
@@ -35,6 +37,7 @@ app.include_router(admin.router)
 app.include_router(notifications.router)
 app.include_router(vehicules.router)
 app.include_router(pdf_tools.router)
+app.include_router(devis.router)
 
 
 # ── Pydantic schemas ──────────────────────────────────────────
