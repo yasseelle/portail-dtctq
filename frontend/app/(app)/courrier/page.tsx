@@ -62,6 +62,10 @@ export default function CourrierPage() {
   const [syncResult, setSyncResult] = useState("");
   const syncRef = useRef<any>(null);
 
+  // ── Sort ──
+  const [sortCol, setSortCol] = useState<string>("date");
+  const [sortDir, setSortDir] = useState<"asc"|"desc">("desc");
+
   useEffect(() => {
     const stored = localStorage.getItem("user");
     const tok    = localStorage.getItem("token");
@@ -133,6 +137,39 @@ export default function CourrierPage() {
   }
 
   function closePrev() { setPreviewUrl(null); setPreviewName(""); setPreviewLoading(false); }
+
+  // ── Sort helper ──
+  function parseDate(s: string): number {
+    if (!s || s === "—") return 0;
+    // DD/MM/YYYY → sortable number YYYYMMDD
+    const p = s.split("/");
+    if (p.length === 3) return parseInt(`${p[2]}${p[1].padStart(2,"0")}${p[0].padStart(2,"0")}`);
+    return 0;
+  }
+
+  function toggleSort(col: string) {
+    if (sortCol === col) setSortDir(d => d === "asc" ? "desc" : "asc");
+    else { setSortCol(col); setSortDir("desc"); }
+  }
+
+  const sortedItems = [...items].sort((a, b) => {
+    let va: any, vb: any;
+    if (sortCol === "date") {
+      va = parseDate(a.date_courrier || a.date_depart || a.created_at || "");
+      vb = parseDate(b.date_courrier || b.date_depart || b.created_at || "");
+    } else if (sortCol === "expediteur") {
+      va = (a.expediteur || a.destinataire || "").toLowerCase();
+      vb = (b.expediteur || b.destinataire || "").toLowerCase();
+    } else if (sortCol === "objet") {
+      va = (a.objet || "").toLowerCase();
+      vb = (b.objet || "").toLowerCase();
+    } else {
+      va = a[sortCol] || ""; vb = b[sortCol] || "";
+    }
+    if (va < vb) return sortDir === "asc" ? -1 : 1;
+    if (va > vb) return sortDir === "asc" ?  1 : -1;
+    return 0;
+  });
 
   if (!user) return null;
 
@@ -238,8 +275,13 @@ export default function CourrierPage() {
         </div>
       )}
 
-      {/* ── Main grid ── */}
-      <div style={{ display:"grid", gridTemplateColumns:"1fr 300px", gap:18, alignItems:"start" }}>
+      {/* ── Main grid — switches layout when preview is active ── */}
+      <div style={{
+        display:"grid",
+        gridTemplateColumns: hasPrev ? "1fr 1fr" : "1fr 300px",
+        gap:18, alignItems:"start",
+        transition:"grid-template-columns 0.3s ease",
+      }}>
 
         {/* ════ LEFT: Search + Table ════ */}
         <div>
@@ -294,9 +336,9 @@ export default function CourrierPage() {
             <table>
               <thead>
                 <tr>
-                  {tab==="arrivee"   && <><Th>N°</Th><Th>Expéditeur</Th><Th>Date</Th><Th>Objet</Th><Th>Mois</Th><Th>Actions</Th></>}
-                  {tab==="bordereau" && <><Th>N°</Th><Th>Référence</Th><Th>Destinataire</Th><Th>Objet</Th><Th>Date</Th><Th>Actions</Th></>}
-                  {tab==="depart"    && <><Th>N°</Th><Th>Référence</Th><Th>Destinataire</Th><Th>Objet</Th><Th>Départ</Th><Th>Statut</Th><Th>Actions</Th></>}
+                  {tab==="arrivee"   && <><Th>N°</Th><ThSort label="Expéditeur" col="expediteur" sortCol={sortCol} sortDir={sortDir} onSort={toggleSort}/><ThSort label="Date" col="date" sortCol={sortCol} sortDir={sortDir} onSort={toggleSort}/><Th>Objet</Th><ThSort label="Mois" col="mois" sortCol={sortCol} sortDir={sortDir} onSort={toggleSort}/><Th>Actions</Th></>}
+                  {tab==="bordereau" && <><Th>N°</Th><Th>Référence</Th><ThSort label="Destinataire" col="destinataire" sortCol={sortCol} sortDir={sortDir} onSort={toggleSort}/><Th>Objet</Th><ThSort label="Date" col="date" sortCol={sortCol} sortDir={sortDir} onSort={toggleSort}/><Th>Actions</Th></>}
+                  {tab==="depart"    && <><Th>N°</Th><Th>Référence</Th><ThSort label="Destinataire" col="destinataire" sortCol={sortCol} sortDir={sortDir} onSort={toggleSort}/><Th>Objet</Th><ThSort label="Départ" col="date" sortCol={sortCol} sortDir={sortDir} onSort={toggleSort}/><Th>Statut</Th><Th>Actions</Th></>}
                 </tr>
               </thead>
               <tbody>
@@ -315,7 +357,7 @@ export default function CourrierPage() {
                     <div style={{ fontSize:32, marginBottom:10, opacity:.2 }}>📭</div>
                     Aucun résultat
                   </td></tr>
-                ) : items.map((item, i) => (
+                ) : sortedItems.map((item, i) => (
                   <tr key={item.id}>
                     {tab==="arrivee" && <>
                       <td style={tdS}><span style={{ color:"var(--muted)", fontSize:11 }}>{(page-1)*20+i+1}</span></td>
@@ -364,7 +406,12 @@ export default function CourrierPage() {
         </div>
 
         {/* ════ RIGHT: Preview + Charts ════ */}
-        <div style={{ display:"flex", flexDirection:"column", gap:14 }}>
+        <div style={{
+          display:"flex", flexDirection:"column", gap:14,
+          position:"sticky", top:76,
+          maxHeight:"calc(100vh - 100px)",
+          overflowY: hasPrev ? "hidden" : "auto",
+        }}>
 
           {/* PDF Preview card */}
           <div style={{
@@ -399,7 +446,7 @@ export default function CourrierPage() {
 
             {!hasPrev && (
               <div style={{ display:"flex", flexDirection:"column", alignItems:"center",
-                justifyContent:"center", height:260, gap:10, padding:20 }}>
+                justifyContent:"center", height:320, gap:10, padding:20 }}>
                 <div style={{ fontSize:36, opacity:.12 }}>📄</div>
                 <div style={{ fontSize:12, color:"var(--muted)", textAlign:"center", lineHeight:1.6, maxWidth:160 }}>
                   Sélectionnez un courrier et cliquez 👁️ pour afficher son PDF
@@ -409,19 +456,24 @@ export default function CourrierPage() {
             )}
 
             {previewLoading && !previewUrl && (
-              <div style={{ display:"flex", alignItems:"center", justifyContent:"center", height:260, gap:10 }}>
+              <div style={{ display:"flex", alignItems:"center", justifyContent:"center", height:320, gap:10 }}>
                 <div className="skeleton" style={{ width:40, height:40, borderRadius:"50%" }}/>
                 <span style={{ fontSize:12, color:"var(--muted)" }}>Chargement PDF...</span>
               </div>
             )}
 
             {previewUrl && (
-              <iframe src={previewUrl} style={{ width:"100%", height:340, border:"none", display:"block" }} title="PDF"/>
+              <iframe src={previewUrl} style={{
+                width:"100%",
+                height:"calc(100vh - 220px)",
+                minHeight:500,
+                border:"none", display:"block",
+              }} title="PDF"/>
             )}
           </div>
 
-          {/* Top expéditeurs / destinataires */}
-          {stats && (
+          {/* Top expéditeurs / destinataires — hidden when preview active */}
+          {stats && !hasPrev && (
             <div style={{ background:"var(--surface)", border:"1px solid var(--border)", borderRadius:14, padding:16 }}>
               <div style={{ fontFamily:"var(--font-head)", fontSize:13, fontWeight:700, marginBottom:12 }}>
                 {tab==="arrivee" ? "🏢 Top expéditeurs" : "🏢 Top destinataires"}
@@ -454,8 +506,8 @@ export default function CourrierPage() {
             </div>
           )}
 
-          {/* Taux réponse — départ only */}
-          {tab==="depart" && stats && (
+          {/* Taux réponse — départ only, hidden when preview active */}
+          {tab==="depart" && stats && !hasPrev && (
             <div style={{ background:"var(--surface)", border:"1px solid var(--border)", borderRadius:14, padding:16 }}>
               <div style={{ fontFamily:"var(--font-head)", fontSize:13, fontWeight:700, marginBottom:14 }}>📊 Taux de réponse</div>
               <div style={{ textAlign:"center", marginBottom:12 }}>
@@ -476,8 +528,8 @@ export default function CourrierPage() {
             </div>
           )}
 
-          {/* Légende mois — arrivée only */}
-          {tab==="arrivee" && (
+          {/* Légende mois — arrivée only, hidden when preview active */}
+          {tab==="arrivee" && !hasPrev && (
             <div style={{ background:"var(--surface)", border:"1px solid var(--border)", borderRadius:14, padding:16 }}>
               <div style={{ fontFamily:"var(--font-head)", fontSize:13, fontWeight:700, marginBottom:12 }}>🎨 Légende des mois</div>
               <div style={{ display:"grid", gridTemplateColumns:"1fr 1fr", gap:5 }}>
@@ -571,6 +623,30 @@ function Th({ children }: any) {
   return <th style={{ padding:"9px 14px", textAlign:"left", fontSize:10, fontWeight:700,
     textTransform:"uppercase", letterSpacing:"0.7px", color:"var(--muted)",
     borderBottom:"1px solid var(--border)", whiteSpace:"nowrap" }}>{children}</th>;
+}
+
+function ThSort({ label, col, sortCol, sortDir, onSort }: {
+  label: string; col: string; sortCol: string;
+  sortDir: "asc"|"desc"; onSort: (c:string)=>void;
+}) {
+  const active = sortCol === col;
+  return (
+    <th onClick={() => onSort(col)} style={{
+      padding:"9px 14px", textAlign:"left", fontSize:10, fontWeight:700,
+      textTransform:"uppercase", letterSpacing:"0.7px",
+      color: active ? "var(--accent)" : "var(--muted)",
+      borderBottom:"1px solid var(--border)", whiteSpace:"nowrap",
+      cursor:"pointer", userSelect:"none",
+      transition:"color 0.15s",
+    }}>
+      <span style={{ display:"flex", alignItems:"center", gap:4 }}>
+        {label}
+        <span style={{ fontSize:9, opacity: active ? 1 : 0.4 }}>
+          {active ? (sortDir === "asc" ? "▲" : "▼") : "⇅"}
+        </span>
+      </span>
+    </th>
+  );
 }
 
 function TruncText({ text, max }: { text: string; max: number }) {

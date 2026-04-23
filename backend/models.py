@@ -125,3 +125,49 @@ class Devis(Base):
     mois         = Column(String, default="")       # feuille Excel ex: "Janvier"
     created_at   = Column(DateTime, server_default=func.now())
     updated_at   = Column(DateTime, server_default=func.now(), onupdate=func.now())
+
+class Projet(Base):
+    __tablename__ = "projets"
+
+    id           = Column(Integer, primary_key=True, index=True)
+    nom          = Column(String,  nullable=False)        # ex: "Ligne 60kV Rabat-Casablanca"
+    type_projet  = Column(String,  default="")            # ligne_electrique | poste | maintenance | administratif
+    description  = Column(Text,    default="")
+    localisation = Column(String,  default="")            # ex: "Rabat - Casablanca"
+    statut       = Column(String,  default="en_cours")    # en_cours | suspendu | termine | annule
+    priorite     = Column(String,  default="normale")     # haute | normale | basse
+    date_debut   = Column(String,  default="")
+    date_fin_prev= Column(String,  default="")
+    created_by   = Column(Integer, nullable=True)
+    created_at   = Column(DateTime, server_default=func.now())
+    updated_at   = Column(DateTime, server_default=func.now(), onupdate=func.now())
+
+
+class ProjetDocument(Base):
+    """Lien entre un projet et un document (courrier, devis, bordereau)."""
+    __tablename__ = "projet_documents"
+
+    id           = Column(Integer, primary_key=True, index=True)
+    projet_id    = Column(Integer, ForeignKey("projets.id"), nullable=False)
+    doc_type     = Column(String,  nullable=False)   # courrier | devis | bordereau | autre
+    doc_id       = Column(Integer, nullable=True)    # ID dans la table source (peut être null si lien manuel)
+    doc_ref      = Column(String,  default="")       # référence du document
+    doc_titre    = Column(String,  default="")       # titre/objet du document
+    doc_date     = Column(String,  default="")       # date du document
+    etape        = Column(String,  default="")       # etape detectée par IA
+    etape_ordre  = Column(Integer, default=0)        # ordre dans la timeline
+    notes        = Column(Text,    default="")       # notes manuelles
+    pdf_path     = Column(String,  default="")       # chemin PDF si disponible
+    added_by_ai  = Column(Boolean, default=False)    # ajouté automatiquement par IA
+    created_at   = Column(DateTime, server_default=func.now())
+
+
+class ProjetNote(Base):
+    """Notes et commentaires sur un projet."""
+    __tablename__ = "projet_notes"
+
+    id         = Column(Integer, primary_key=True, index=True)
+    projet_id  = Column(Integer, ForeignKey("projets.id"), nullable=False)
+    contenu    = Column(Text,    nullable=False)
+    auteur_id  = Column(Integer, nullable=True)
+    created_at = Column(DateTime, server_default=func.now())

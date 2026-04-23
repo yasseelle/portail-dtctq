@@ -6,7 +6,7 @@ routers/courrier.py — API Courrier, Bordereau, Départ/Réception
 from fastapi import APIRouter, Depends, Query, HTTPException
 from fastapi.responses import FileResponse
 from sqlalchemy.orm import Session
-from sqlalchemy import or_, func
+from sqlalchemy import or_, func, case
 from typing import Optional
 from pathlib import Path
 import os
@@ -16,6 +16,14 @@ import models, auth
 from database import get_db
 
 router = APIRouter(prefix="/courrier", tags=["Courrier"])
+
+
+def _date_sort_expr(date_col):
+    """
+    Convertit DD/MM/YYYY en YYYYMMDD pour un tri SQL correct.
+    "17/04/2026" → "20260417"
+    """
+    return func.substr(date_col, 7, 4) + func.substr(date_col, 4, 2) + func.substr(date_col, 1, 2)
 
 STORAGE_DIRS = {
     "arrivee":   r"C:\courrier\storage",
@@ -244,10 +252,12 @@ def sync_all(
 
 @router.get("/arrivee")
 def get_courrier(
-    search: Optional[str] = Query(None),
-    mois:   Optional[str] = Query(None),
-    page:   int = Query(1, ge=1),
-    limit:  int = Query(20, ge=1, le=100),
+    search:   Optional[str] = Query(None),
+    mois:     Optional[str] = Query(None),
+    page:     int = Query(1, ge=1),
+    limit:    int = Query(20, ge=1, le=100),
+    sort_by:  str = Query("date", regex="^(date|expediteur|objet|mois)$"),
+    sort_dir: str = Query("desc", regex="^(asc|desc)$"),
     current_user=Depends(auth.get_current_user),
     db: Session = Depends(get_db),
 ):
@@ -262,8 +272,18 @@ def get_courrier(
     if mois:
         q = q.filter(models.Courrier.mois.ilike(f"%{mois}%"))
 
+    # ── Tri côté backend ──
+    sort_map = {
+        "date":       _date_sort_expr(models.Courrier.date_courrier),
+        "expediteur": models.Courrier.expediteur,
+        "objet":      models.Courrier.objet,
+        "mois":       models.Courrier.mois,
+    }
+    sort_expr = sort_map.get(sort_by, _date_sort_expr(models.Courrier.date_courrier))
+    sort_expr = sort_expr.desc() if sort_dir == "desc" else sort_expr.asc()
+
     total = q.count()
-    items = q.order_by(models.Courrier.id.desc()).offset((page-1)*limit).limit(limit).all()
+    items = q.order_by(sort_expr).offset((page-1)*limit).limit(limit).all()
 
     return {
         "total": total, "page": page,
@@ -304,9 +324,11 @@ def get_courrier_stats(
 
 @router.get("/bordereau")
 def get_bordereau(
-    search: Optional[str] = Query(None),
-    page:   int = Query(1, ge=1),
-    limit:  int = Query(20, ge=1, le=100),
+    search:   Optional[str] = Query(None),
+    page:     int = Query(1, ge=1),
+    limit:    int = Query(20, ge=1, le=100),
+    sort_by:  str = Query("date", regex="^(date|reference|destinataire|objet)$"),
+    sort_dir: str = Query("desc", regex="^(asc|desc)$"),
     current_user=Depends(auth.get_current_user),
     db: Session = Depends(get_db),
 ):
@@ -318,8 +340,18 @@ def get_bordereau(
             models.Bordereau.destinataire.ilike(term),
             models.Bordereau.objet.ilike(term),
         ))
+
+    sort_map = {
+        "date":        models.Bordereau.created_at,
+        "reference":   models.Bordereau.reference,
+        "destinataire":models.Bordereau.destinataire,
+        "objet":       models.Bordereau.objet,
+    }
+    sort_expr = sort_map.get(sort_by, models.Bordereau.created_at)
+    sort_expr = sort_expr.desc() if sort_dir == "desc" else sort_expr.asc()
+
     total = q.count()
-    items = q.order_by(models.Bordereau.id.desc()).offset((page-1)*limit).limit(limit).all()
+    items = q.order_by(sort_expr).offset((page-1)*limit).limit(limit).all()
     return {
         "total": total, "page": page,
         "pages": (total + limit - 1) // limit,
@@ -374,8 +406,19 @@ def get_depart(
     if mois:
         q = q.filter(models.CourrierDepart.mois.ilike(f"%{mois}%"))
 
+    sort_map = {
+        "date":        _date_sort_expr(models.CourrierDepart.date_depart),
+        "reference":   models.CourrierDepart.reference,
+        "destinataire":models.CourrierDepart.destinataire,
+        "objet":       models.CourrierDepart.objet,
+    }
+    sort_by  = sort_by  if 'sort_by'  in dir() else "date"
+    sort_dir = sort_dir if 'sort_dir' in dir() else "desc"
+    sort_expr = sort_map.get(sort_by, _date_sort_expr(models.CourrierDepart.date_depart))
+    sort_expr = sort_expr.desc() if sort_dir == "desc" else sort_expr.asc()
+
     total = q.count()
-    items = q.order_by(models.CourrierDepart.id.desc()).offset((page-1)*limit).limit(limit).all()
+    items = q.order_by(sort_expr).offset((page-1)*limit).limit(limit).all()
     return {
         "total": total, "page": page,
         "pages": (total + limit - 1) // limit,

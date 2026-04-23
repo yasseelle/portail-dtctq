@@ -26,6 +26,7 @@ const NAV_ITEMS = [
   { section:"rh",   label:"Repos Compensateur",  icon:"⏱️", href:"/hr"        },
   { section:"main", label:"Parc Véhicules", icon:"🚗", href:"/vehicules" },
   { section:"sys", label:"Outils PDF", icon:"📄", href:"/pdf-tools" },
+  { section:"main", label:"Suivi Projets", icon:"🏗️", href:"/projets" },
   { section:"sys",  label:"Mon Profil",          icon:"👤", href:"/profile"   },
   { section:"sys",  label:"Panel Admin",         icon:"👑", href:"/admin", adminOnly:true },
 ];
