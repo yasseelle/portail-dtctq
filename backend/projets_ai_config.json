@@ -1,0 +1,12 @@
+{
+  "txt_paths": {
+    "courrier": "C:\\courrier\\texts",
+    "bordereau": "C:\\bordereau_envoi\\texts",
+    "courrier_depart": "C:\\courrier_depart_reception\\texts",
+    "devis": "C:\\devis\\texts"
+  },
+  "batch_size": 30,
+  "txt_truncate_chars": 500,
+  "confidence_threshold": 65,
+  "auto_link_threshold": 80
+}

@@ -1,7 +1,8 @@
 from sqlalchemy import Column, Integer, String, DateTime, Text, JSON
+from sqlalchemy.orm import relationship
 from sqlalchemy.sql import func
 from database import Base
-from sqlalchemy import Column, Integer, String, DateTime, Text, Boolean, ForeignKey
+from sqlalchemy import Column, Integer, String, DateTime, Text, Boolean, ForeignKey,Float
 from sqlalchemy.sql import func
 from sqlalchemy import Column, Integer, String, DateTime, Text, JSON, ForeignKey
 
@@ -171,3 +172,40 @@ class ProjetNote(Base):
     contenu    = Column(Text,    nullable=False)
     auteur_id  = Column(Integer, nullable=True)
     created_at = Column(DateTime, server_default=func.now())
+
+# ─────────────────────────────────────────────
+# AJOUT dans models.py — coller après les autres modèles
+# ─────────────────────────────────────────────
+
+class Attachement(Base):
+    __tablename__ = "attachements"
+
+    id             = Column(Integer, primary_key=True, index=True)
+    entreprise     = Column(String, nullable=True)
+    date_document  = Column(String, nullable=True)   # DD/MM/YYYY (date du PDF scanné)
+    marche_numero  = Column(String, nullable=True)   # TC97132 / SR...
+    marche_nom     = Column(String, nullable=True)
+    date_debut     = Column(String, nullable=True)   # DD/MM/YYYY
+    date_fin       = Column(String, nullable=True)   # DD/MM/YYYY
+    att_numero     = Column(Integer, nullable=True)  # N° attachement
+    pdf_path       = Column(String, nullable=True)
+    projet_id      = Column(Integer, ForeignKey("projets.id"), nullable=True)
+    source         = Column(String, default="manuel")  # manuel / claude / tesseract
+    created_at = Column(DateTime, server_default=func.now())
+
+    articles = relationship("AttachementArticle", back_populates="attachement",
+                            cascade="all, delete-orphan")
+
+
+class AttachementArticle(Base):
+    __tablename__ = "attachement_articles"
+
+    id              = Column(Integer, primary_key=True, index=True)
+    attachement_id  = Column(Integer, ForeignKey("attachements.id"), nullable=False)
+    article         = Column(String, nullable=True)   # "Piquetage pylônes"
+    quantite        = Column(Float, nullable=True)    # 19
+    unite           = Column(String, nullable=True)   # "Ton"
+    prix_unitaire   = Column(Float, nullable=True)    # 1500
+    montant_total   = Column(Float, nullable=True)    # quantite * prix_unitaire
+
+    attachement = relationship("Attachement", back_populates="articles")

@@ -29,6 +29,8 @@ const NAV_ITEMS = [
   { section:"main", label:"Suivi Projets", icon:"🏗️", href:"/projets" },
   { section:"sys",  label:"Mon Profil",          icon:"👤", href:"/profile"   },
   { section:"sys",  label:"Panel Admin",         icon:"👑", href:"/admin", adminOnly:true },
+  { section:"sys", label:"Database Manager", icon:"🗄️", href:"/database", adminOnly:true },
+
 ];
 
 const SECTIONS = [

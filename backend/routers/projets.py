@@ -32,6 +32,7 @@ router = APIRouter(prefix="/projets", tags=["Projets"])
 ANTHROPIC_API_KEY = ""
 CLAUDE_MODEL      = "claude-haiku-4-5-20251001"
 
+
 # Charger clé depuis .env
 def _load_env():
     env_locations = [
@@ -49,7 +50,7 @@ def _load_env():
             break
 
 _load_env()
-ANTHROPIC_API_KEY = os.environ.get("ANTHROPIC_API_KEY", "")
+ANTHROPIC_API_KEY = os.environ.get("ANTHROPIC_API_KEY", "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")
 CLAUDE_MODEL      = os.environ.get("CLAUDE_MODEL", "claude-haiku-4-5-20251001")
 
 # ── Types & étapes ────────────────────────────────────────────────────────────

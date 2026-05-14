@@ -10,6 +10,10 @@ from routers import notifications
 from routers import vehicules
 from routers import pdf_tools
 from routers import projets
+from routers import database_manager
+from routers import projets_ai
+from routers import attachements
+
 
 import models, auth
 from database import engine, get_db, Base
@@ -40,6 +44,10 @@ app.include_router(projets.router)
 app.include_router(vehicules.router)
 app.include_router(pdf_tools.router)
 app.include_router(devis.router)
+app.include_router(database_manager.router)
+app.include_router(projets_ai.router)
+app.include_router(attachements.router)
+
 
 # ── Pydantic schemas ──────────────────────────────────────────
 class UserCreate(BaseModel):
