@@ -32,6 +32,7 @@ from typing import Optional, List, Dict, Any
 from fastapi import APIRouter, Depends, HTTPException, Query, BackgroundTasks
 from sqlalchemy.orm import Session
 from pydantic import BaseModel
+from dotenv import load_dotenv
 
 import models, auth
 from database import get_db
@@ -54,9 +55,9 @@ def _load_env():
                         k, v = line.split("=", 1)
                         os.environ.setdefault(k.strip(), v.strip())
             break
-
+load_dotenv()
 _load_env()
-ANTHROPIC_API_KEY = os.environ.get("ANTHROPIC_API_KEY", os.getenv("API_KEY"))
+ANTHROPIC_API_KEY = os.getenv("API_KEY")
 CLAUDE_MODEL      = os.environ.get("CLAUDE_MODEL", "claude-haiku-4-5-20251001")
 
 # Fichier de config des chemins (sauvegardé par le super admin)

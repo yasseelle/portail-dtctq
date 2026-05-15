@@ -26,12 +26,9 @@ from pydantic import BaseModel
 
 import models, auth
 from database import get_db
+from dotenv import load_dotenv
 
 router = APIRouter(prefix="/projets", tags=["Projets"])
-
-ANTHROPIC_API_KEY = ""
-CLAUDE_MODEL      = "claude-haiku-4-5-20251001"
-
 
 # Charger clé depuis .env
 def _load_env():
@@ -48,9 +45,9 @@ def _load_env():
                         k, v = line.split("=", 1)
                         os.environ.setdefault(k.strip(), v.strip())
             break
-
+load_dotenv()
 _load_env()
-ANTHROPIC_API_KEY = os.environ.get("ANTHROPIC_API_KEY",os.getenv("API_KEY"))
+ANTHROPIC_API_KEY = os.getenv("API_KEY")
 CLAUDE_MODEL      = os.environ.get("CLAUDE_MODEL", "claude-haiku-4-5-20251001")
 
 # ── Types & étapes ────────────────────────────────────────────────────────────
